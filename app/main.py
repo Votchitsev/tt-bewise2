@@ -1,7 +1,7 @@
 import os
 import uuid
 from fastapi import FastAPI, HTTPException, Request, status, UploadFile, Form, File
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi.responses import JSONResponse, FileResponse, RedirectResponse
 from typing import Annotated
 from pydantic.error_wrappers import ValidationError
 from .interface import AuthQuery
@@ -15,9 +15,9 @@ app = FastAPI()
 storage = FileStorage(os.path.abspath('./app/storage'))
 
 
-@app.get('/')
+@app.get('/', include_in_schema=False)
 def root():
-    return None
+    return RedirectResponse(url='/docs')
 
 
 @app.post('/auth')
