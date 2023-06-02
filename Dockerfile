@@ -1,5 +1,8 @@
 FROM python:3.11.1-slim
 
+RUN apt -y update
+RUN apt install -y lame
+
 WORKDIR /app
 
 ENV PYTHONDONTWRITEBYTECODE 1

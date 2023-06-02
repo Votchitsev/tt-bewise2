@@ -15,3 +15,20 @@ RESPONSE
   "uuid": "d5492088-0129-11ee-82ea-0242ac130003"
 }
 ```
+
+### Загрузка файла
+
+Для загрузки файла отправляется запрос на ```/upload```. ```Content-type``` запроса должен быть ``` Multipart/form-data```.
+
+```
+POST /upload
+
+{
+  id: 11,
+  uuid: "d5492088-0129-11ee-82ea-0242ac130003",
+  file: file
+}
+
+RESPONSE
+
+```

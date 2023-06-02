@@ -1,12 +1,18 @@
-from fastapi import FastAPI, HTTPException, Request, status
+import os
+import uuid
+from fastapi import FastAPI, HTTPException, Request, status, UploadFile, Form, File
 from fastapi.responses import JSONResponse
+from typing import Annotated
 from pydantic.error_wrappers import ValidationError
 from .interface import AuthQuery
 from asyncpg.exceptions import UniqueViolationError
+from .FileStorage import FileStorage
 from .db import database, User
 
 
 app = FastAPI()
+
+storage = FileStorage(os.path.abspath('./app/storage'))
 
 
 @app.get('/')
@@ -25,7 +31,43 @@ async def auth(query: AuthQuery):
         'uuid': response.uuid,
     }
 
-    
+
+@app.post('/upload')
+async def upload_file(
+    file: Annotated[UploadFile, File()],
+    user_id: Annotated[int, Form()],
+    user_uuid: Annotated[str, Form()],
+):
+    if file.content_type != "audio/wav":
+        raise HTTPException(    
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='Not wav file.'
+        )
+
+    user = await User.objects.get_or_none(
+        id=user_id,
+        uuid=user_uuid,
+    )
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail='Invalid credentials'
+        )
+
+    collected_file = await storage.collect_file(uuid.uuid1(), file)
+
+    if not collected_file:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="File doesn't collected",
+        )
+
+    return {
+        'url': collected_file,
+    }
+
+
 @app.exception_handler(ValidationError)
 async def validation_error_handler(request: Request, exc: ValidationError):
     return JSONResponse(
