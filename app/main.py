@@ -1,7 +1,7 @@
 import os
 import uuid
 from fastapi import FastAPI, HTTPException, Request, status, UploadFile, Form, File
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from typing import Annotated
 from pydantic.error_wrappers import ValidationError
 from .interface import AuthQuery
@@ -55,7 +55,7 @@ async def upload_file(
             detail='Invalid credentials'
         )
 
-    collected_file = await storage.collect_file(uuid.uuid1(), file)
+    collected_file = await storage.collect_file(uuid.uuid1(), file, user)
 
     if not collected_file:
         raise HTTPException(
@@ -66,6 +66,23 @@ async def upload_file(
     return {
         'url': collected_file,
     }
+
+
+@app.get('/record')
+async def download_file(id: str, user_id: int):
+    file = await storage.get_file(id, user_id)
+
+    if not file:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='File not found.'
+        )
+    
+    return FileResponse(
+        path=file.path,
+        filename='{record_id}.mp3'.format(record_id=id),
+        media_type='multipart/form-data',
+    )
 
 
 @app.exception_handler(ValidationError)

@@ -2,6 +2,7 @@ import uuid
 import databases
 import ormar
 import sqlalchemy
+from typing import Optional 
 
 from .config import settings
 
@@ -30,6 +31,7 @@ class Files(ormar.Model):
 
     id: int = ormar.UUID(primary_key=True, uuid_format='string', default=uuid.uuid1)
     path: str = ormar.String(max_length=100)
+    user: User = ormar.ForeignKey(User)
 
 
 engine = sqlalchemy.create_engine(settings.db_url)
