@@ -1,6 +1,5 @@
 env/
 .vscode
-storage/*
-!tmp/
-!storage/.gitkeep
-!storage/tmp/.gitkeep
+storage/
+!.gitkeep
+!tmp/.gitkeep
